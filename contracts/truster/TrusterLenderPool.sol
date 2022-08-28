@@ -1,22 +1,13 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-/**
- * @title TrusterLenderPool
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract TrusterLenderPool is ReentrancyGuard {
 
-    using Address for address;
+    IERC20 public damnValuableToken;
 
-    IERC20 public immutable damnValuableToken;
-
-    constructor (address tokenAddress) {
+    constructor (address tokenAddress) public {
         damnValuableToken = IERC20(tokenAddress);
     }
 
@@ -33,7 +24,8 @@ contract TrusterLenderPool is ReentrancyGuard {
         require(balanceBefore >= borrowAmount, "Not enough tokens in pool");
         
         damnValuableToken.transfer(borrower, borrowAmount);
-        target.functionCall(data);
+        (bool success, ) = target.call(data);
+        require(success, "External call failed");
 
         uint256 balanceAfter = damnValuableToken.balanceOf(address(this));
         require(balanceAfter >= balanceBefore, "Flash loan hasn't been paid back");

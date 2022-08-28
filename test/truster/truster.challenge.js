@@ -1,46 +1,44 @@
-const { ethers } = require('hardhat');
+const { ether } = require('@openzeppelin/test-helpers');
+const { accounts, contract } = require('@openzeppelin/test-environment');
+
+const DamnValuableToken = contract.fromArtifact('DamnValuableToken');
+const TrusterLenderPool = contract.fromArtifact('TrusterLenderPool');
+
 const { expect } = require('chai');
 
 describe('[Challenge] Truster', function () {
-    let deployer, attacker;
 
-    const TOKENS_IN_POOL = ethers.utils.parseEther('1000000');
+    const [deployer, attacker, ...otherAccounts] = accounts;
+
+    const TOKENS_IN_POOL = ether('1000000');
 
     before(async function () {
-        /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
-        [deployer, attacker] = await ethers.getSigners();
+        /** SETUP SCENARIO */
+        this.token = await DamnValuableToken.new({ from: deployer });
+        this.pool = await TrusterLenderPool.new(this.token.address, { from: deployer });
 
-        const DamnValuableToken = await ethers.getContractFactory('DamnValuableToken', deployer);
-        const TrusterLenderPool = await ethers.getContractFactory('TrusterLenderPool', deployer);
-
-        this.token = await DamnValuableToken.deploy();
-        this.pool = await TrusterLenderPool.deploy(this.token.address);
-
-        await this.token.transfer(this.pool.address, TOKENS_IN_POOL);
+        await this.token.transfer(this.pool.address, TOKENS_IN_POOL, { from: deployer });
 
         expect(
             await this.token.balanceOf(this.pool.address)
-        ).to.equal(TOKENS_IN_POOL);
+        ).to.be.bignumber.equal(TOKENS_IN_POOL);
 
         expect(
-            await this.token.balanceOf(attacker.address)
-        ).to.equal('0');
+            await this.token.balanceOf(attacker)
+        ).to.be.bignumber.equal('0');
     });
 
     it('Exploit', async function () {
-        /** CODE YOUR EXPLOIT HERE  */
+        /** YOUR EXPLOIT GOES HERE */
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS */
-
-        // Attacker has taken all tokens from the pool
         expect(
-            await this.token.balanceOf(attacker.address)
-        ).to.equal(TOKENS_IN_POOL);
+            await this.token.balanceOf(attacker)
+        ).to.be.bignumber.equal(TOKENS_IN_POOL);        
         expect(
             await this.token.balanceOf(this.pool.address)
-        ).to.equal('0');
+        ).to.be.bignumber.equal('0');
     });
 });
-

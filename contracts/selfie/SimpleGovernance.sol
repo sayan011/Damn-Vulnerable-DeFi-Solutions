@@ -1,16 +1,8 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "../DamnValuableTokenSnapshot.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 
-/**
- * @title SimpleGovernance
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract SimpleGovernance {
-
-    using Address for address;
     
     struct GovernanceAction {
         address receiver;
@@ -29,7 +21,7 @@ contract SimpleGovernance {
     event ActionQueued(uint256 actionId, address indexed caller);
     event ActionExecuted(uint256 actionId, address indexed caller);
 
-    constructor(address governanceTokenAddress) {
+    constructor(address governanceTokenAddress) public {
         require(governanceTokenAddress != address(0), "Governance token cannot be zero address");
         governanceToken = DamnValuableTokenSnapshot(governanceTokenAddress);
         actionCounter = 1;
@@ -59,10 +51,11 @@ contract SimpleGovernance {
         GovernanceAction storage actionToExecute = actions[actionId];
         actionToExecute.executedAt = block.timestamp;
 
-        actionToExecute.receiver.functionCallWithValue(
-            actionToExecute.data,
-            actionToExecute.weiAmount
-        );
+        (bool success,) = actionToExecute.receiver.call{
+            value: actionToExecute.weiAmount
+        }(actionToExecute.data);
+        
+        require(success, "Action failed");
 
         emit ActionExecuted(actionId, msg.sender);
     }

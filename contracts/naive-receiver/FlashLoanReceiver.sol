@@ -1,19 +1,15 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
-/**
- * @title FlashLoanReceiver
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract FlashLoanReceiver {
+    using SafeMath for uint256;
     using Address for address payable;
 
     address payable private pool;
 
-    constructor(address payable poolAddress) {
+    constructor(address payable poolAddress) public {
         pool = poolAddress;
     }
 
@@ -21,7 +17,7 @@ contract FlashLoanReceiver {
     function receiveEther(uint256 fee) public payable {
         require(msg.sender == pool, "Sender must be pool");
 
-        uint256 amountToBeRepaid = msg.value + fee;
+        uint256 amountToBeRepaid = msg.value.add(fee);
 
         require(address(this).balance >= amountToBeRepaid, "Cannot borrow that much");
         

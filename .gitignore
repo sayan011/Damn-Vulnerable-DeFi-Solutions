@@ -3,7 +3,3 @@ build
 contracts/attacker-contracts/*.sol
 *.solved.js
 cache
-.openzeppelin
-.vscode
-artifacts
-cache

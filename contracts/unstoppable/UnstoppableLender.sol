@@ -1,24 +1,20 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IReceiver {
     function receiveTokens(address tokenAddress, uint256 amount) external;
 }
 
-/**
- * @title UnstoppableLender
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract UnstoppableLender is ReentrancyGuard {
+    using SafeMath for uint256;
 
-    IERC20 public immutable damnValuableToken;
+    IERC20 public damnValuableToken;
     uint256 public poolBalance;
 
-    constructor(address tokenAddress) {
+    constructor(address tokenAddress) public {
         require(tokenAddress != address(0), "Token address cannot be zero");
         damnValuableToken = IERC20(tokenAddress);
     }
@@ -27,7 +23,7 @@ contract UnstoppableLender is ReentrancyGuard {
         require(amount > 0, "Must deposit at least one token");
         // Transfer token from sender. Sender must have first approved them.
         damnValuableToken.transferFrom(msg.sender, address(this), amount);
-        poolBalance = poolBalance + amount;
+        poolBalance = poolBalance.add(amount);
     }
 
     function flashLoan(uint256 borrowAmount) external nonReentrant {
@@ -46,4 +42,5 @@ contract UnstoppableLender is ReentrancyGuard {
         uint256 balanceAfter = damnValuableToken.balanceOf(address(this));
         require(balanceAfter >= balanceBefore, "Flash loan hasn't been paid back");
     }
+
 }

@@ -1,18 +1,13 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Snapshot.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Snapshot.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./SimpleGovernance.sol";
 
-/**
- * @title SelfiePool
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract SelfiePool is ReentrancyGuard {
 
-    using Address for address;
+    using Address for address payable;
 
     ERC20Snapshot public token;
     SimpleGovernance public governance;
@@ -24,7 +19,7 @@ contract SelfiePool is ReentrancyGuard {
         _;
     }
 
-    constructor(address tokenAddress, address governanceAddress) {
+    constructor(address tokenAddress, address governanceAddress) public {
         token = ERC20Snapshot(tokenAddress);
         governance = SimpleGovernance(governanceAddress);
     }
@@ -36,13 +31,14 @@ contract SelfiePool is ReentrancyGuard {
         token.transfer(msg.sender, borrowAmount);        
         
         require(msg.sender.isContract(), "Sender must be a deployed contract");
-        msg.sender.functionCall(
+        (bool success,) = msg.sender.call(
             abi.encodeWithSignature(
                 "receiveTokens(address,uint256)",
                 address(token),
                 borrowAmount
             )
         );
+        require(success, "External call failed");
         
         uint256 balanceAfter = token.balanceOf(address(this));
 

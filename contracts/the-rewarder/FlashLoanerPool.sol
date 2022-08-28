@@ -1,24 +1,19 @@
-// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.0;
 
-pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../DamnValuableToken.sol";
 
 /**
- * @title FlashLoanerPool
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
-
- * @dev A simple pool to get flash loans of DVT
+ * @notice A simple pool to get flash loans of DVT
  */
 contract FlashLoanerPool is ReentrancyGuard {
 
-    using Address for address;
+    using Address for address payable;
 
-    DamnValuableToken public immutable liquidityToken;
+    DamnValuableToken public liquidityToken;
 
-    constructor(address liquidityTokenAddress) {
+    constructor(address liquidityTokenAddress) public {
         liquidityToken = DamnValuableToken(liquidityTokenAddress);
     }
 
@@ -30,12 +25,13 @@ contract FlashLoanerPool is ReentrancyGuard {
         
         liquidityToken.transfer(msg.sender, amount);
 
-        msg.sender.functionCall(
+        (bool success, ) = msg.sender.call(
             abi.encodeWithSignature(
                 "receiveFlashLoan(uint256)",
                 amount
             )
         );
+        require(success, "External call failed");
 
         require(liquidityToken.balanceOf(address(this)) >= balanceBefore, "Flash loan not paid back");
     }

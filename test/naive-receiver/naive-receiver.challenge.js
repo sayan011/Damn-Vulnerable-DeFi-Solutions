@@ -1,47 +1,47 @@
-const { ethers } = require('hardhat');
+const { ether, balance } = require('@openzeppelin/test-helpers');
+const { accounts, contract, web3 } = require('@openzeppelin/test-environment');
+
+const LenderPool = contract.fromArtifact('NaiveReceiverLenderPool');
+const FlashLoanReceiver = contract.fromArtifact('FlashLoanReceiver');
+
 const { expect } = require('chai');
 
 describe('[Challenge] Naive receiver', function () {
-    let deployer, user, attacker;
+
+    const [deployer, user, attacker, ...otherAccounts] = accounts;
 
     // Pool has 1000 ETH in balance
-    const ETHER_IN_POOL = ethers.utils.parseEther('1000');
+    const ETHER_IN_POOL = ether('1000');
 
     // Receiver has 10 ETH in balance
-    const ETHER_IN_RECEIVER = ethers.utils.parseEther('10');
+    const ETHER_IN_RECEIVER = ether('10');
 
     before(async function () {
-        /** SETUP SCENARIO - NO NEED TO CHANGE ANYTHING HERE */
-        [deployer, user, attacker] = await ethers.getSigners();
-
-        const LenderPoolFactory = await ethers.getContractFactory('NaiveReceiverLenderPool', deployer);
-        const FlashLoanReceiverFactory = await ethers.getContractFactory('FlashLoanReceiver', deployer);
-
-        this.pool = await LenderPoolFactory.deploy();
-        await deployer.sendTransaction({ to: this.pool.address, value: ETHER_IN_POOL });
+        /** SETUP - NO NEED TO CHANGE ANYTHING HERE */
+        this.pool = await LenderPool.new({ from: deployer });
+        await web3.eth.sendTransaction({ from: deployer, to: this.pool.address, value: ETHER_IN_POOL });
         
-        expect(await ethers.provider.getBalance(this.pool.address)).to.be.equal(ETHER_IN_POOL);
-        expect(await this.pool.fixedFee()).to.be.equal(ethers.utils.parseEther('1'));
+        expect(await balance.current(this.pool.address)).to.be.bignumber.equal(ETHER_IN_POOL);
+        expect(await this.pool.fixedFee({ from: deployer })).to.be.bignumber.equal(ether('1'));
 
-        this.receiver = await FlashLoanReceiverFactory.deploy(this.pool.address);
-        await deployer.sendTransaction({ to: this.receiver.address, value: ETHER_IN_RECEIVER });
+        this.receiver = await FlashLoanReceiver.new(this.pool.address, { from: user });
+        await web3.eth.sendTransaction({ from: user, to: this.receiver.address, value: ETHER_IN_RECEIVER });
         
-        expect(await ethers.provider.getBalance(this.receiver.address)).to.be.equal(ETHER_IN_RECEIVER);
+        expect(await balance.current(this.receiver.address)).to.be.bignumber.equal(ETHER_IN_RECEIVER);
     });
 
     it('Exploit', async function () {
-        /** CODE YOUR EXPLOIT HERE */   
+        /** YOUR EXPLOIT GOES HERE */
     });
 
     after(async function () {
         /** SUCCESS CONDITIONS */
-
         // All ETH has been drained from the receiver
         expect(
-            await ethers.provider.getBalance(this.receiver.address)
-        ).to.be.equal('0');
+            await balance.current(this.receiver.address)
+        ).to.be.bignumber.equal('0');
         expect(
-            await ethers.provider.getBalance(this.pool.address)
-        ).to.be.equal(ETHER_IN_POOL.add(ETHER_IN_RECEIVER));
+            await balance.current(this.pool.address)
+        ).to.be.bignumber.equal(ETHER_IN_POOL.add(ETHER_IN_RECEIVER));
     });
 });

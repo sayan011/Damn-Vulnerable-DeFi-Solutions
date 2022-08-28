@@ -1,20 +1,14 @@
-// SPDX-License-Identifier: MIT
-
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.0;
 
 import "../unstoppable/UnstoppableLender.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/**
- * @title ReceiverUnstoppable
- * @author Damn Vulnerable DeFi (https://damnvulnerabledefi.xyz)
- */
 contract ReceiverUnstoppable {
 
-    UnstoppableLender private immutable pool;
-    address private immutable owner;
+    UnstoppableLender private pool;
+    address private owner;
 
-    constructor(address poolAddress) {
+    constructor(address poolAddress) public {
         pool = UnstoppableLender(poolAddress);
         owner = msg.sender;
     }
