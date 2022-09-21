@@ -3,6 +3,7 @@ const { accounts, contract } = require('@openzeppelin/test-environment');
 
 const SideEntranceLenderPool = contract.fromArtifact('SideEntranceLenderPool');
 
+
 const { expect } = require('chai');
 
 describe('[Challenge] Side entrance', function () {
