@@ -11,6 +11,7 @@ describe('[Challenge] Side entrance', function () {
     const [deployer, attacker, ...otherAccounts] = accounts;
 
     const ETHER_IN_POOL = ether('1000');
+    
 
     before(async function () {
         /** SETUP SCENARIO */
