@@ -13,6 +13,7 @@ describe('[Challenge] Side entrance', function () {
     const ETHER_IN_POOL = ether('1000');
     
 
+    
     before(async function () {
         /** SETUP SCENARIO */
         this.pool = await SideEntranceLenderPool.new({ from: deployer });
