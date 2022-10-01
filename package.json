@@ -11,6 +11,7 @@
     "puppet": "npm run compile && npx mocha --timeout 5000 --exit test/puppet/puppet.challenge.js",
     "compile": "npx buidler compile"
   },
+  
   "license": "MIT",
   "dependencies": {
     "@nomiclabs/buidler": "1.4.7",

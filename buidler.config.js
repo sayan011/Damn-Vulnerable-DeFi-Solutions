@@ -5,4 +5,5 @@ module.exports = {
     paths: {
       artifacts: "./build/contracts"
     }
+    
 }

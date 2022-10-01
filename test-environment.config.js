@@ -10,4 +10,5 @@ module.exports = {
     },
   
     blockGasLimit: 8e6, // Maximum gas per block
+    
 };
